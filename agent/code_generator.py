@@ -36,10 +36,6 @@ def generate_code_and_tests(
     }
     prompt = INITIAL_GENERATION_PROMPT.format(**prompt_context)
     full_response = llm.generate(prompt, verbose=verbose)
-    if verbose:
-        print("--- LLM Response ---\n"
-              f"{full_response}\n"
-              "--------------------")
 
     return _parse_code_and_tests(full_response)
 
@@ -76,10 +72,6 @@ def revise_code_and_tests(
     }
     prompt = REVISION_PROMPT.format(**prompt_context)
     full_response = llm.generate(prompt, verbose=verbose)
-    if verbose:
-        print("--- LLM Response ---\n"
-              f"{full_response}\n"
-              "--------------------")
 
     return _parse_code_and_tests(full_response)
 
