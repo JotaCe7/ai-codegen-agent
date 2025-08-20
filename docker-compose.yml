@@ -1,29 +1,26 @@
-version: '3.8'
-
 services:
   # Service 1: AI Agent's Fast API
   api:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    env_file:
+      - .env.docker # Load application config from this file
     # ports:
     #   - "8000:8000"
     environment:
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
-      - ollama
-  
-  # Service 2: Ollama Server
-  ollama:
-    image: ollama/ollama
-    volumes:
-      # Saves the downloaded models to your computer
-      # so they don't get deleted when you stop the container.
-      - ${OLLAMA_MODELS_PATH:-./ollama_models}:/root/.ollama
-    ports:
-      - "11434:11434"
+      ollama:
+        condition: service_healthy # Wait for Ollama to be ready
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s # Grace period for the server to start
 
-  # Service 3: Streamlit Front-End
+  # Service 2: Streamlit Front-End
   frontend:
     build: 
       context: .
@@ -33,4 +30,23 @@ services:
     environment:
       - API_URL=http://api:8000
     depends_on:
-      - api
+      api:
+        condition: service_healthy # Wait for the API to be ready
+
+  # Service 3: Ollama Server
+  ollama:
+    image: ollama/ollama
+    volumes:
+      # Saves the downloaded models to your computer
+      # so they don't get deleted when you stop the container.
+      - ${OLLAMA_MODELS_PATH:-./ollama_models}:/root/.ollama
+    ports:
+      - "11434:11434"
+    healthcheck:
+      # Use Ollama's own CLI to check if the service is responsive.
+      # This is more reliable than using a tool like curl that may not be installed.
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s # Give Ollama a 20-second grace period to start up.
