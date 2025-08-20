@@ -21,19 +21,9 @@ The agent:
 - 🧪 **Test-Driven Validation**: Automatically runs the generated tests in a secure, isolated environment to validate the code's correctness.
 - 🧠 **Intelligent Retry Loop**: Analyzes errors (bugs vs. test issues) and revises automatically.  
 - 🌐 **Web API & GUI**: FastAPI back end + Streamlit GUI for easy interaction.  
-- 🐳 **Dockerized Deployment**: The back-end application is containerized with Docker for easy, consistent deployment.
+- 🐳 **Dockerized Deployment**: The application is containerized with Docker and managed with Docker Compose for easy, multi-service deployment.
 - 💻 **Dual-Interface**: Streamlit GUI and CLI (`cli.py`) for flexibility.  
 - 🔧 **Verbose Mode**: CLI `--verbose` flag for detailed step-by-step output.  
-
----
-
-## 🛠️ Technology Stack
-
-- **AI Core:** LangChain, OpenAI / Ollama
-- **Back End:** FastAPI, Uvicorn
-- **Front End:** Streamlit
-- **Testing:** Python Unittest
-- **Deployment:** Docker
 
 ---
 
@@ -47,7 +37,7 @@ The project follows a **clean, decoupled architecture**:
   - `test_runner.py`: Runs generated tests safely in an isolated subprocess. 
 - **Back End (FastAPI)**: `main.py` serves the core AI logic via a REST API.  
 - **Front End (Streamlit)**: `app.py` provides an interactive UI that talks to the FastAPI back end.
-- **Deployment (Docker)**: The `Dockerfile` packages the back end into a portable container for easy deployment.
+- **Deployment (Docker)**:  The `Dockerfile` packages the back end, and `docker-compose.yml` orchestrates the API and Ollama services.
 
 ---
 
@@ -84,64 +74,71 @@ pip install -r requirements.txt
 
 ## 🔧 Configuration
 
-Before running the agent, configure your LLM provider in config.py:
+Before running the agent, you need to provide your configuration.
 
-1. Open the `config.py` file.
-2. Set `LLM_PROVIDER` to `"openai"` or `"ollama"`.
-3. Set `MODEL` to your desired model (e.g., `"gpt-4"`, `"codellama:latest"`).
-4. If using OpenAI, make sure to set your `OPENAI_API_KEY`.
+1. **Create a `.env` file** in the root of the project. This file is for local configuration and is ignored by Git.
+2. **Add your configuration** to the .env file. Here is an example:
+
+```bash
+# === LLM Configuration ===
+LLM_PROVIDER=ollama
+# or 'apenai'
+MODEL=codellama:latest
+# or 'gpt-4'
+
+# === API Keys / Endpoints ===
+OPENAI_API_KEY=sk-...
+OLLAMA_HOST=http://localhost:11434
+
+# == Ollama Configuration ==
+# (Optional) If you have existing Ollama models, provide the path here
+# to avoid re-downloading them.
+# For macOS/Linux:
+# OLLAMA_MODELS_PATH=~/.ollama
+# For Windows:
+OLLAMA_MODELS_PATH=C:\Users\YourUsername\.ollama
+
+```
+
+*Your `config.py` file will automatically read these values.*
 
 ---
 
 ## ▶️ How to Run
 
-There are two ways to run this project: using Docker (recommended for a stable deployment) or running the services manually
+This project uses Docker Compose to run the FastAPI back end and the Ollama server in separate, managed containers.
 
-### Option 1: Running with Docker (Recommended)
+#### **First-Time** Setup Only (If you are **not using existing models**):
 
-This method runs the FastAPI back end inside a Docker container.
+If you have not configured `OLLAMA_MODELS_PATH` in your `.env` file, you need to pre-download your model once.
 
-1. Build the Docker Image
-
-*(Note the . at the end of the command)*
+1. **Start the servive in the background:**
 
 ```bash
-docker build -t ai-codegen-agent .
+docker-compose up --build -d
 ```
 
-2. Run the Docker Container
+2. **Pre-download your LLM model:** (Replace `codellama:latest` with the model from your `.env` file)
 
 ```bash
-docker run -p 8000:8000 --name my-ai-codegen-agent ai-codegen-agent
+docker-compose exec ollama ollama pull codellama:latest
 ```
 
-The API will now be running and accessible at `http://127.0.0.1:8000`.
-
-3. Start the Front-End GUI
-
-In a separate terminal, start the Streamlit front end.
+3. **Stop** the services for **now**.
 
 ```bash
-streamlit run app.py
+docker-compose down
 ```
 
-### Option 2: Running Manually 
+#### Normal Run
 
-1. Start the Back-End API
-
-This requires running the back-end API and the front-end GUI in two separate terminals.
+1. Start all services
 
 ```bash
-uvicorn main:app --reload
+docker-compose up
 ```
 
-The API will be available at `http://127.0.0.1:8000`.
-
-2. Start the Front-End GUI
-
-```bash
-streamlit run app.py
-```
+*This will start the API, Ollama, and the Streamlit GUI all at once.*
 
 ---
 
@@ -149,7 +146,7 @@ streamlit run app.py
 
 ### Using the Web Interface
 
-1. Navigate to the Streamlit URL provided in your terminal.
+1. Navigate to the Streamlit URL provided in your terminal (usually `http://localhost:8501`).
 
 2. Enter your code generation task in the text area (e.g., "Create a function to sort a list of numbers").
 
@@ -161,7 +158,7 @@ streamlit run app.py
 
 You can also run the agent directly from the command line for quick tests.
 
-**Basic Usage:**
+#### Basic Usage:
 
 Run the agent directly from the CLI:
 
@@ -169,7 +166,7 @@ Run the agent directly from the CLI:
 python cli.py "Your task description here"
 ```
 
-**Verbose mode:**
+#### Verbose mode:
 
 To see the full step-by-step process, including LLM prompts and responses, use the `-v` or `--verbose` flag.
 

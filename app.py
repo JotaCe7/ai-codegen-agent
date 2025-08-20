@@ -1,5 +1,7 @@
-import streamlit as st
+import os
 import requests
+
+import streamlit as st
 
 st.title("AI Code Generation Agent")
 
@@ -7,7 +9,10 @@ st.title("AI Code Generation Agent")
 task = st.text_area("Enter your code generation task:")
 
 if st.button("Generate Code"):
-    api_url = "http://127.0.0.1:8000/generate-code"
+
+    # Get the API URL from the environment variable, with a default for local development
+    api_base_url = os.getenv("API_URL", "http://127.0.0.1:8000")
+    api_url = f"{api_base_url}/generate-code"
     response = requests.post(api_url, json={"task_description": task})
 
     if response.status_code == 200:

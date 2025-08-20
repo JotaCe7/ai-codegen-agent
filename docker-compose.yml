@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Service 1: AI Agent's Fast API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    # ports:
+    #   - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+  
+  # Service 2: Ollama Server
+  ollama:
+    image: ollama/ollama
+    volumes:
+      # Saves the downloaded models to your computer
+      # so they don't get deleted when you stop the container.
+      - ${OLLAMA_MODELS_PATH:-./ollama_models}:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  # Service 3: Streamlit Front-End
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.fronted
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
