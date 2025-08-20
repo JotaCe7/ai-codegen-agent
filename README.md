@@ -37,7 +37,7 @@ The project follows a **clean, decoupled architecture**:
   - `test_runner.py`: Runs generated tests safely in an isolated subprocess. 
 - **Back End (FastAPI)**: `main.py` serves the core AI logic via a REST API.  
 - **Front End (Streamlit)**: `app.py` provides an interactive UI that talks to the FastAPI back end.
-- **Deployment (Docker)**:  The `Dockerfile` packages the back end, and `docker-compose.yml` orchestrates the API and Ollama services.
+- **Deployment (Docker)**:  The `Dockerfile.backend` and `Dockerfile.frontend` package the services, and `docker-compose.yml` orchestrates the API, GUI, and Ollama services.
 
 ---
 
@@ -67,17 +67,18 @@ source venv/bin/activate
 3. **Install Dependencies**
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-backend.txt -r requirements-frontend.txt
 ```
 
 ---
 
 ## 🔧 Configuration
 
-Before running the agent, you need to provide your configuration.
+This project uses separate environment files for local development and for running with Docker Compose.
 
-1. **Create a `.env` file** in the root of the project. This file is for local configuration and is ignored by Git.
-2. **Add your configuration** to the .env file. Here is an example:
+### For Local Runs (e.g. python cli.py)
+
+Create a file named `.env` in the project root. This file is for your local secrets and machine-specific settings and should be added to `.gitignore.`
 
 ```bash
 # === LLM Configuration ===
@@ -90,25 +91,50 @@ MODEL=codellama:latest
 OPENAI_API_KEY=sk-...
 OLLAMA_HOST=http://localhost:11434
 
-# == Ollama Configuration ==
-# (Optional) If you have existing Ollama models, provide the path here
-# to avoid re-downloading them.
-# For macOS/Linux:
-# OLLAMA_MODELS_PATH=~/.ollama
-# For Windows:
-OLLAMA_MODELS_PATH=C:\Users\YourUsername\.ollama
-
+# == Front-End Configuration ==
+API_URL=[http://127.0.0.1:8000](http://127.0.0.1:8000)
 ```
 
 *Your `config.py` file will automatically read these values.*
+
+### For Docker Compose Runs
+
+When running with Docker, you need two environment files.
+
+1. **`.env` file:** This file is used by Docker Compose for variable substitution (like the models path). It should be in your .gitignore.
+
+
+    ```bash
+    # Contents for your .env file for Docker runs
+
+    # == Ollama Configuration ==
+    OLLAMA_MODELS_PATH=C:\Users\YourUsername\.ollama
+    ```
+
+2. **`.env.docker` file:** This file provides the application-level configuration to the containers. This file should be committed to your repository.
+
+    ```bash
+    # Contents for your .env.docker file for Docker runs
+
+    # === LLM Configuration ===
+    LLM_PROVIDER=ollama
+    # or 'apenai'
+    MODEL=codellama:latest
+    # or 'gpt-4'
+
+    # === API Keys ===
+    # Secrets like API keys can be managed in your local .env file,
+    # which Docker Compose will also read and pass to the container.
+    OPENAI_API_KEY=sk-...
+    ```
 
 ---
 
 ## ▶️ How to Run
 
-This project uses Docker Compose to run the FastAPI back end and the Ollama server in separate, managed containers.
+This project uses Docker Compose to run the FastAPI back end, the Ollama server, and the Streamlit GUI in separate, managed containers.
 
-#### **First-Time** Setup Only (If you are **not using existing models**):
+### First-Time Setup Only (If you are not using existing models):
 
 If you have not configured `OLLAMA_MODELS_PATH` in your `.env` file, you need to pre-download your model once.
 
@@ -118,7 +144,7 @@ If you have not configured `OLLAMA_MODELS_PATH` in your `.env` file, you need to
 docker-compose up --build -d
 ```
 
-2. **Pre-download your LLM model:** (Replace `codellama:latest` with the model from your `.env` file)
+2. **Pre-download your LLM model:** (Replace `codellama:latest` with the model from your `.env.docker` file)
 
 ```bash
 docker-compose exec ollama ollama pull codellama:latest
@@ -130,7 +156,7 @@ docker-compose exec ollama ollama pull codellama:latest
 docker-compose down
 ```
 
-#### Normal Run
+### Normal Run
 
 1. Start all services
 
