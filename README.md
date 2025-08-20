@@ -12,34 +12,48 @@ This project automates the initial draft of both code and tests by leveraging a 
 The agent:
 1. Receives a natural language task.  
 2. Generates both Python code and tests.  
-3. Iterates in a revision loop until the code passes all tests.  
+3. Iterates in a revision loop until the code passes all tests or maximum tries are reached.  
 
 ---
 
 ## ✨ Features
-- 🤖 **Autonomous Code Generation**: Functions, classes, and unit tests from a single prompt.  
-- 🧪 **Test-Driven Validation**: Runs generated tests in a secure, isolated environment.  
+- 🤖 **Autonomous Code Generation**: Generates Python functions, classes, and unit tests from a single natural language prompt.  
+- 🧪 **Test-Driven Validation**: Automatically runs the generated tests in a secure, isolated environment to validate the code's correctness.
 - 🧠 **Intelligent Retry Loop**: Analyzes errors (bugs vs. test issues) and revises automatically.  
 - 🌐 **Web API & GUI**: FastAPI back end + Streamlit GUI for easy interaction.  
+- 🐳 **Dockerized Deployment**: The back-end application is containerized with Docker for easy, consistent deployment.
 - 💻 **Dual-Interface**: Streamlit GUI and CLI (`cli.py`) for flexibility.  
 - 🔧 **Verbose Mode**: CLI `--verbose` flag for detailed step-by-step output.  
 
 ---
 
-## 🛠️ Project Architecture
+## 🛠️ Technology Stack
+
+- **AI Core:** LangChain, OpenAI / Ollama
+- **Back End:** FastAPI, Uvicorn
+- **Front End:** Streamlit
+- **Testing:** Python Unittest
+- **Deployment:** Docker
+
+---
+
+## 🛠️ Project Architecture and Technology Stack
 The project follows a **clean, decoupled architecture**:
 
-- **Back End (FastAPI)**: `main.py` serves the core AI logic via a REST API.  
-- **Front End (Streamlit)**: `app.py` provides an interactive UI that talks to the FastAPI back end.  
-- **AI Core (`agent/`)**:
+- **AI Core (LangChain, OpenAI / Ollama)**: The `agent/` package contains all core logic.
   - `llm_interface.py`: Manages LLM interactions (LangChain-based).  
   - `prompts.py`: Centralized prompt templates.  
-  - `code_generator.py`: Code and test generation + revisions.  
-  - `test_runner.py`: Runs generated tests safely in an isolated subprocess.  
+  - `code_generator.py`: Handles code and test generation/revisions.
+  - `test_runner.py`: Runs generated tests safely in an isolated subprocess. 
+- **Back End (FastAPI)**: `main.py` serves the core AI logic via a REST API.  
+- **Front End (Streamlit)**: `app.py` provides an interactive UI that talks to the FastAPI back end.
+- **Deployment (Docker)**: The `Dockerfile` packages the back end into a portable container for easy deployment.
 
 ---
 
 ## ⚙️ Setup and Installation
+
+Follow these steps to set up and run the project locally.
 
 1. **Clone the Repository**
 
@@ -69,23 +83,53 @@ pip install -r requirements.txt
 ---
 
 ## 🔧 Configuration
+
 Before running the agent, configure your LLM provider in config.py:
 
-1. Opwn the `config.py` file.
-
+1. Open the `config.py` file.
 2. Set `LLM_PROVIDER` to `"openai"` or `"ollama"`.
-
 3. Set `MODEL` to your desired model (e.g., `"gpt-4"`, `"codellama:latest"`).
-
 4. If using OpenAI, make sure to set your `OPENAI_API_KEY`.
 
 ---
 
 ## ▶️ How to Run
 
-You need to run the back-end API and the front-end GUI in two separate terminals.
+There are two ways to run this project: using Docker (recommended for a stable deployment) or running the services manually
+
+### Option 1: Running with Docker (Recommended)
+
+This method runs the FastAPI back end inside a Docker container.
+
+1. Build the Docker Image
+
+*(Note the . at the end of the command)*
+
+```bash
+docker build -t ai-codegen-agent .
+```
+
+2. Run the Docker Container
+
+```bash
+docker run -p 8000:8000 --name my-ai-codegen-agent ai-codegen-agent
+```
+
+The API will now be running and accessible at `http://127.0.0.1:8000`.
+
+3. Start the Front-End GUI
+
+In a separate terminal, start the Streamlit front end.
+
+```bash
+streamlit run app.py
+```
+
+### Option 2: Running Manually 
 
 1. Start the Back-End API
+
+This requires running the back-end API and the front-end GUI in two separate terminals.
 
 ```bash
 uvicorn main:app --reload
@@ -98,8 +142,6 @@ The API will be available at `http://127.0.0.1:8000`.
 ```bash
 streamlit run app.py
 ```
-
-A new tab will open in your browser with the user interface.
 
 ---
 
