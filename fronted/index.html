@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>AI Code Generation Agent</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">AI Code Generation Agent</h1>
+            <p class="text-lg text-gray-600 mt-2">A test-driven agent that automatically generates, validates, and revises Python code.</p>
+        </header>
+
+        <main class="bg-white p-6 rounded-lg shadow-md">
+            <div class="mb-6">
+                <label for="task-input" class="block text-lg font-medium text-gray-700 mb-2">Enter your code generation task:</label>
+                <textarea id="task-input" rows="4" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="e.g. Create a Python function to sort a list of numbers."></textarea>
+            </div>
+
+            <div class="text-center">
+                <button id="generate-btn" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed inline-flex items-center justify-center">
+                    <span id="btn-text">Generate Code</span>
+                    <div id="loader" class="animate-spin rounded-full h-6 w-6 border-4 border-gray-200 border-t-blue-500 hidden ml-2"></div>
+                </button>
+            </div>
+        </main>
+
+        <section id="results-section" class="mt-8 hidden">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Results</h2>
+            <div class="space-y-6">
+                <!-- Generated Code -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-2">Generated Code</h3>
+                    <div class="bg-gray-900 text-white p-4 rounded-lg shadow-inner">
+                        <pre><code id="generated-code" class="language-python"></code></pre>
+                    </div>
+                </div>
+
+                <!-- Generated Tests -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-2">Generated Tests</h3>
+                    <div class="bg-gray-900 text-white p-4 rounded-lg shadow-inner">
+                        <pre><code id="generated-tests" class="language-python"></code></pre>
+                    </div>
+                </div>
+
+                <!-- Test Output -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-2">Test Output</h3>
+                    <div class="bg-gray-800 text-gray-300 p-4 rounded-lg shadow-inner">
+                        <pre><code id="test-output"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const generateBtn = document.getElementById("generate-btn");
+        const taskInput = document.getElementById("task-input");
+        const resultsSection = document.getElementById("results-section");
+
+        const generatedCodeEl = document.getElementById("generated-code");
+        const generatedTestsEl = document.getElementById("generated-tests");
+        const testOutputEl = document.getElementById("test-output");
+
+        const btnText = document.getElementById("btn-text");
+        const loader = document.getElementById("loader");
+
+        generateBtn.addEventListener('click', async () => {
+            const taskDescription = taskInput.value.trim();
+            if (!taskDescription) {
+                alert("Please enter a task description.");
+                return;
+            }
+
+            // --- UI state for loading ---
+            generateBtn.disabled = true;
+            btnText.textContent = 'Generating...';
+            loader.classList.remove('hidden');
+            resultsSection.classList.remove('hidden');
+
+            try {
+                // --- API Call ---
+                const apiURL = 'http://127.0.0.1:8000/generate-code';
+
+                const response = await fetch(apiURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        task_description: taskDescription,
+                        max_tries: 3,
+                        verbose: false
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // --- Display Results ---
+                generatedCodeEl.textContent = result.code || 'No code generated.';
+                generatedTestsEl.textContent = result.tests || 'No tests generated.';
+                testOutputEl.textContent = result.output || 'No test output.';
+
+                resultsSection.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error:', error);
+                testOutputEl.textContent = `An error occurred: ${error.message}`;
+                resultsSection.classList.remove('hidden');
+            } finally {
+                // --- Reset UI state ---
+                generateBtn.disabled = false;
+                btnText.textContent = 'Generate Code';
+                loader.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

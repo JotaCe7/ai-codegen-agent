@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from cli import run_task
@@ -9,6 +10,22 @@ app = FastAPI(
     description=("An API for a test-driven AI agent that generates "
                  "and validates Python code."),
     version="1.0.0",
+)
+
+# Add CORS Middleware
+
+origins = [
+    "http://localhost:8501", # Streamlit's default port
+    "http://127.0.0.1:8501",
+    "null", # For local file:// access when opening index.html directly
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Allow all methods, including POST and OPTIONS
+    allow_headers=["*"],
 )
 
 class TaskRequest(BaseModel):
