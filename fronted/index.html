@@ -64,7 +64,8 @@
         </section>
 
     </div>
-
+    
+    <script src="config.js"></script>
     <script>
         const generateBtn = document.getElementById("generate-btn");
         const taskInput = document.getElementById("task-input");
@@ -92,7 +93,7 @@
 
             try {
                 // --- API Call ---
-                const apiURL = 'http://127.0.0.1:8000/generate-code';
+                const apiURL = APP_CONFIG.API_URL;
 
                 const response = await fetch(apiURL, {
                     method: 'POST',
