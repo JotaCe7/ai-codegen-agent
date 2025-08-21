@@ -20,24 +20,26 @@ The agent:
 - 🤖 **Autonomous Code Generation**: Generates Python functions, classes, and unit tests from a single natural language prompt.  
 - 🧪 **Test-Driven Validation**: Automatically runs the generated tests in a secure, isolated environment to validate the code's correctness.
 - 🧠 **Intelligent Retry Loop**: Analyzes errors (bugs vs. test issues) and revises automatically.  
-- 🌐 **Web API & GUI**: FastAPI back end + Streamlit GUI for easy interaction.  
-- 🐳 **Dockerized Deployment**: The application is containerized with Docker and managed with Docker Compose for easy, multi-service deployment.
+- 🌐 **Web API & Multiple UIs**: Core logic is served via a FastAPI back end, with both a Streamlit GUI and a traditional HTML/CSS/JS front end available.
+- 🐳 **Dockerized Deployment**: The entire full-stack application (API, GUI, and Ollama) is containerized with Docker and managed with Docker Compose for a single-command launch.
 - 💻 **Dual-Interface**: Streamlit GUI and CLI (`cli.py`) for flexibility.  
-- 🔧 **Verbose Mode**: CLI `--verbose` flag for detailed step-by-step output.  
+- 🔧 **Verbose Mode**:  A `--verbose` flag for the CLI provides detailed, step-by-step output for debugging.
 
 ---
 
 ## 🛠️ Project Architecture and Technology Stack
 The project follows a **clean, decoupled architecture**:
 
-- **AI Core (LangChain, OpenAI / Ollama)**: The `agent/` package contains all core logic.
+- **AI Core (LangChain, OpenAI / Ollama):** The `agent/` package contains all core logic.
   - `llm_interface.py`: Manages LLM interactions (LangChain-based).  
   - `prompts.py`: Centralized prompt templates.  
   - `code_generator.py`: Handles code and test generation/revisions.
   - `test_runner.py`: Runs generated tests safely in an isolated subprocess. 
-- **Back End (FastAPI)**: `main.py` serves the core AI logic via a REST API.  
-- **Front End (Streamlit)**: `app.py` provides an interactive UI that talks to the FastAPI back end.
-- **Deployment (Docker)**:  The `Dockerfile.backend` and `Dockerfile.frontend` package the services, and `docker-compose.yml` orchestrates the API, GUI, and Ollama services.
+- **Back End (FastAPI):** `main.py` serves the core AI logic via a REST API.  
+- **Front Ends:**
+  * **Streamlit:** `app.py` provides an interactiive UI built entirely in Python.
+  * **Tarditional Web:** The `fronted/` directory contains a standard HTML, CSS, and JavaScript user interface.
+- **Deployment (Docker):**  The `Dockerfile.backend` and `Dockerfile.frontend` package the services, and `docker-compose.yml` orchestrates the API, GUI, and Ollama services.
 
 ---
 
@@ -172,7 +174,10 @@ docker-compose up
 
 ### Using the Web Interface
 
-1. Navigate to the Streamlit URL provided in your terminal (usually `http://localhost:8501`).
+1. After running `docker-compose up`, you can access either of the two web interfaces:
+
+  * **Streamlit GUI:** Navigate to the Streamlit URL provided in your terminal (usually `http://localhost:8501`).
+  * **HTML/CSS/JS:** Open the frontend/index.html file directly in your browser.
 
 2. Enter your code generation task in the text area (e.g., "Create a function to sort a list of numbers").
 
